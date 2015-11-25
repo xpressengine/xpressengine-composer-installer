@@ -34,7 +34,7 @@ class XpressengineInstaller extends LibraryInstaller
      * @param PackageInterface $package 3rd party plugin package instance
      * @return string
      */
-    public function getPackageBasePath(PackageInterface $package)
+    public function getInstallPath(PackageInterface $package)
     {
         list(, $packageName) = explode('/', $package->getPrettyName());
 
