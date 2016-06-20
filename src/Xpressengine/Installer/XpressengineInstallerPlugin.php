@@ -71,16 +71,16 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
     public static function getSubscribedEvents()
     {
         return array(
-            /*InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'preDependencySolve',*/
+            InstallerEvents::PRE_DEPENDENCIES_SOLVING => 'preDependencySolve',
             InstallerEvents::POST_DEPENDENCIES_SOLVING => 'postDependencySolve',
-            ScriptEvents::PRE_INSTALL_CMD => 'onInstallUpdateOrDump',
-            ScriptEvents::PRE_UPDATE_CMD => 'onInstallUpdateOrDump',
+            //ScriptEvents::PRE_INSTALL_CMD => 'onInstallUpdateOrDump',
+            //ScriptEvents::PRE_UPDATE_CMD => 'onInstallUpdateOrDump',
             ScriptEvents::POST_INSTALL_CMD => 'postInstallOrUpdate',
             ScriptEvents::POST_UPDATE_CMD => 'postInstallOrUpdate',
         );
     }
 
-    public function onInstallUpdateOrDump(Event $event)
+    public function preDependencySolve(InstallerEvent $event)
     {
         if(!$this->enabled) {
             return;
@@ -133,7 +133,7 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
 
         $data = json_decode(file_get_contents($path));
 
-        $data->extra->{"xpressengine-plugin"}->changed = XpressengineInstaller::$changed;
+        $data->{"xpressengine-plugin"}->changed = XpressengineInstaller::$changed;
 
         $dataJson = json_encode($data);
 
