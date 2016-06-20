@@ -15,7 +15,7 @@
             "Xpressengine\\Installer": "src/"
         },
         "files": [
-          "src/helpers.php"
+          "src/Xpressengine/Installer/helpers.php"
         ]
     },
     "extra": {

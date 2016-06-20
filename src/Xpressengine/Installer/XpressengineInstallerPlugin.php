@@ -61,8 +61,6 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
 
         $installer = new XpressengineInstaller($io, $composer);
         $composer->getInstallationManager()->addInstaller($installer);
-
-        require_once 'helpers.php';
     }
 
     /**
