@@ -13,10 +13,7 @@
     "autoload": {
         "psr-0": {
             "Xpressengine\\Installer": "src/"
-        },
-        "files": [
-          "src/Xpressengine/Installer/helpers.php"
-        ]
+        }
     },
     "extra": {
         "class": "Xpressengine\\Installer\\XpressengineInstallerPlugin"
