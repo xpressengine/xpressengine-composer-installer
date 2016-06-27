@@ -94,7 +94,7 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
         if($mode !== 'plugins-fixed') {
             $packages = $GLOBALS['argv'][$GLOBALS['argc'] - 1];
             if(strpos($packages, 'xpressengine-plugin') !== 0) {
-                throw new \Exception("Xpressengine installer: check file[".$this->path."]. this file is not correct");
+                throw new \Exception("xpressengine-installer: check file[".$this->path."]. this file is not correct");
             }
         }
 
@@ -115,7 +115,7 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
             if (is_subclass_of($operation, UpdateOperation::class) || is_subclass_of($operation, InstallOperation::class)) {
                 $target = $operation->getInitialPackage();
                 if(in_array($target->getName(), $uninstall)) {
-                    throw new \Exception('Xpressengine installer: To install or update the package requested to delete is not allowed.', 66);
+                    throw new \Exception('xpressengine-installer: To install or update the package requested to delete is not allowed.', 66);
                 }
             }
         }
