@@ -91,10 +91,13 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
         $data = $this->getPluginComposerData($event);
 
         $mode = array_get($data, 'xpressengine-plugin.mode');
-        if($mode !== 'plugins-fixed') {
-            $packages = $GLOBALS['argv'][$GLOBALS['argc'] - 1];
-            if(strpos($packages, 'xpressengine-plugin') !== 0) {
-                throw new \Exception("xpressengine-installer: check file[".$this->path."]. this file is not correct");
+        if($mode !== 'plugins-fixed' && !defined('__XE_PLUGIN_MODE__')) {
+            $argc = array_get($GLOBALS, 'argc', 0);
+            if($argc > 1) {
+                $packages = $GLOBALS['argv'][$argc - 1];
+                if(strpos($packages, 'xpressengine-plugin') !== 0) {
+                    throw new \Exception("xpressengine-installer: check file[".$this->path."]. this file is not correct");
+                }
             }
         }
 
@@ -109,7 +112,7 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
 
         $extra = $event->getComposer()->getPackage()->getExtra();
 
-        $uninstall = array_get($extra, 'xpressengine-plugin.uninstall', []);
+        $uninstall = array_get($extra, 'xpressengine-plugin.operation.uninstall', []);
         foreach ($event->getOperations() as $operation) {
             /** @var UpdateOperation $operation */
             if (is_subclass_of($operation, UpdateOperation::class) || is_subclass_of($operation, InstallOperation::class)) {
@@ -133,7 +136,7 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
 
         $data = json_decode(file_get_contents($path));
 
-        $data->{"xpressengine-plugin"}->changed = XpressengineInstaller::$changed;
+        $data->{"xpressengine-plugin"}->operation->changed = XpressengineInstaller::$changed;
 
         $dataJson = json_encode($data);
 
