@@ -134,9 +134,9 @@ class XpressengineInstallerPlugin implements PluginInterface, EventSubscriberInt
 
         $path = $extra['xpressengine-plugin']['path'];
 
-        $data = json_decode(file_get_contents($path));
+        $data = json_decode(file_get_contents($path), true);
 
-        $data->{"xpressengine-plugin"}->operation->changed = XpressengineInstaller::$changed;
+        array_set($data, 'xpressengine-plugin.operation.changed', XpressengineInstaller::$changed);
 
         $dataJson = json_encode($data);
 
