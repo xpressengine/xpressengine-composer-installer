@@ -125,7 +125,11 @@ class XpressengineInstaller extends LibraryInstaller
         $path = $extra['xpressengine-plugin']['path'];
         $data = json_decode(file_get_contents($path), true);
 
-        if(in_array($package->getName(), $data['xpressengine-plugin']['operation']['uninstall'])) {
+        if (isset($data['xpressengine-plugin']['operation']['uninstall']) && in_array(
+                $package->getName(),
+                $data['xpressengine-plugin']['operation']['uninstall']
+            )
+        ) {
             parent::uninstall($repo, $package);
             static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
         } else {
