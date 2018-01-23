@@ -104,8 +104,6 @@ class XpressengineInstaller extends LibraryInstaller
 
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->io->write("xpressengine-installer: installing ".$package->getName());
-
         if (!defined('__XE_PLUGIN_MODE__')) {
             $this->io->write("xpressengine-installer: skip to install ".$package->getName());
         } elseif ($this->checkDevPlugin($package)) {
@@ -123,9 +121,6 @@ class XpressengineInstaller extends LibraryInstaller
 
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-
-        $this->io->write("xpressengine-installer: updating ".$target->getName());
-
         if (!defined('__XE_PLUGIN_MODE__')) {
             $this->io->write("xpressengine-installer: skip to update ".$initial->getName());
         } elseif ($this->checkDevPlugin($initial)) {
@@ -143,8 +138,6 @@ class XpressengineInstaller extends LibraryInstaller
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-
-        $this->io->write("xpressengine-installer: uninstalling ".$package->getName());
         $extra = $this->composer->getPackage()->getExtra();
         $path = $extra['xpressengine-plugin']['path'];
         $data = json_decode(file_get_contents($path), true);
