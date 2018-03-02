@@ -1,7 +1,7 @@
 {
     "name": "xpressengine/installer",
     "type": "composer-plugin",
-    "license": "LGPL",
+    "license": "LGPL-2.1-or-later",
     "authors": [
         {
             "name": "XE Team",
