@@ -14,6 +14,7 @@
 namespace Xpressengine\Installer;
 
 use Composer\Composer;
+use Composer\Downloader\TransportException;
 use Composer\Installer\BinaryInstaller;
 use Composer\Installer\LibraryInstaller;
 use Composer\IO\IOInterface;
@@ -34,7 +35,13 @@ use Composer\Util\Filesystem;
 class XpressengineInstaller extends LibraryInstaller
 {
 
+    /**
+     * @var array
+     */
     public static $changed = [];
+
+    public static $failed = [];
+
 
     /**
      * Initializes library installer.
@@ -53,6 +60,11 @@ class XpressengineInstaller extends LibraryInstaller
             'uninstalled' => [],
         ];
 
+        static::$failed = [
+            'install' => [],
+            'update' => [],
+        ];
+
         parent::__construct($io, $composer, $type, $filesystem, $binaryInstaller);
     }
 
@@ -64,7 +76,6 @@ class XpressengineInstaller extends LibraryInstaller
      */
     public function getInstallPath(PackageInterface $package)
     {
-
         list(, $packageName) = explode('/', $package->getPrettyName());
 
         return 'plugins/' . $packageName;
@@ -93,39 +104,55 @@ class XpressengineInstaller extends LibraryInstaller
 
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->io->write("xpressengine-installer: installing ".$package->getName());
-
-        if($this->checkDevPlugin($package)) {
+        if (!defined('__XE_PLUGIN_MODE__')) {
             $this->io->write("xpressengine-installer: skip to install ".$package->getName());
-            // throw exception!!
-            return;
+        } elseif ($this->checkDevPlugin($package)) {
+            $this->io->write("xpressengine-installer: skip to install ".$package->getName());
+        } else {
+            try {
+                parent::install($repo, $package);
+            } catch(TransportException $e) {
+                static::$failed['install'][$package->getName()] = $e->getStatusCode();
+                throw $e;
+            }
+            static::$changed['installed'][$package->getName()] = $package->getPrettyVersion();
         }
-
-        parent::install($repo, $package);
-        static::$changed['installed'][$package->getName()] = $package->getPrettyVersion();
     }
 
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        $this->io->write("xpressengine-installer: updating ".$target->getName());
-        if($this->checkDevPlugin($initial)) {
+        if (!defined('__XE_PLUGIN_MODE__')) {
             $this->io->write("xpressengine-installer: skip to update ".$initial->getName());
-            // throw exception!!
-            return;
+        } elseif ($this->checkDevPlugin($initial)) {
+            $this->io->write("xpressengine-installer: skip to update ".$initial->getName());
+        } else {
+            try {
+                parent::update($repo, $initial, $target);
+            } catch(TransportException $e) {
+                static::$failed['update'][$target->getName()] = $e->getStatusCode();
+                throw $e;
+            }
+            static::$changed['updated'][$target->getName()] = $target->getPrettyVersion();
         }
-
-        parent::update($repo, $initial, $target);
-        static::$changed['updated'][$target->getName()] = $target->getPrettyVersion();
     }
 
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $this->io->write("xpressengine-installer: uninstalling ".$package->getName());
         $extra = $this->composer->getPackage()->getExtra();
         $path = $extra['xpressengine-plugin']['path'];
         $data = json_decode(file_get_contents($path), true);
 
-        if(in_array($package->getName(), $data['xpressengine-plugin']['uninstall'])) {
+        if(!defined('__XE_PLUGIN_MODE__')) {
+            $this->io->write("xpressengine-installer: skip to uninstall ".$package->getName());
+            return;
+        }
+
+        // uninstall에 등록된 플러그인이 아닐 경우 skip
+        if (isset($data['xpressengine-plugin']['operation']['uninstall']) && in_array(
+                $package->getName(),
+                $data['xpressengine-plugin']['operation']['uninstall']
+            )
+        ) {
             parent::uninstall($repo, $package);
             static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
         } else {
