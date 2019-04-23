@@ -102,12 +102,13 @@ class XpressengineInstaller extends LibraryInstaller
         return parent::isInstalled($repo, $package);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        if (!defined('__XE_PLUGIN_MODE__')) {
-            $this->io->write("xpressengine-installer: skip to install ".$package->getName());
-        } elseif ($this->checkDevPlugin($package)) {
-            $this->io->write("xpressengine-installer: skip to install ".$package->getName());
+        if (defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($package)) {
+            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
         } else {
             try {
                 parent::install($repo, $package);
@@ -119,12 +120,13 @@ class XpressengineInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
-        if (!defined('__XE_PLUGIN_MODE__')) {
-            $this->io->write("xpressengine-installer: skip to update ".$initial->getName());
-        } elseif ($this->checkDevPlugin($initial)) {
-            $this->io->write("xpressengine-installer: skip to update ".$initial->getName());
+        if (defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($initial)) {
+            $this->io->writeError("  - Updating <info>" . $initial->getName() . "</info> (<comment>" . $initial->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
         } else {
             try {
                 parent::update($repo, $initial, $target);
@@ -136,33 +138,28 @@ class XpressengineInstaller extends LibraryInstaller
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        $extra = $this->composer->getPackage()->getExtra();
-        $path = $extra['xpressengine-plugin']['path'];
-        $data = json_decode(file_get_contents($path), true);
-
-        if(!defined('__XE_PLUGIN_MODE__')) {
-            $this->io->write("xpressengine-installer: skip to uninstall ".$package->getName());
-            return;
-        }
-
-        // uninstall에 등록된 플러그인이 아닐 경우 skip
-        if (isset($data['xpressengine-plugin']['operation']['uninstall']) && in_array(
-                $package->getName(),
-                $data['xpressengine-plugin']['operation']['uninstall']
-            )
-        ) {
-            parent::uninstall($repo, $package);
-            static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
-        } else {
-            $this->io->write("xpressengine-installer: skip to uninstall ".$package->getName());
-            if($this->checkDevPlugin($package)) {
+        if(defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($package)) {
+            $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
+            if ($this->checkDevPlugin($package)) {
                 $repo->removePackage($package);
             }
+        } else {
+            parent::uninstall($repo, $package);
+            static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
         }
     }
 
+    /**
+     * Determine if given package is develop plugin for XE
+     *
+     * @param PackageInterface $package package instance
+     * @return bool
+     */
     protected function checkDevPlugin(PackageInterface $package)
     {
         $path = $this->getInstallPath($package);
