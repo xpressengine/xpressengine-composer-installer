@@ -6,8 +6,8 @@
  *
  * @category    Installer
  * @package     Xpressengine\Installer
- * @author      XE Team (jhyeon1010) <cjh1010@xpressengine.com>
- * @copyright   2014 Copyright (C) NAVER <http://www.navercorp.com>
+ * @author      XE Developers <developers@xpressengine.com>
+ * @copyright   2019 Copyright XEHub Corp. <https://www.xehub.io>
  * @license     http://www.gnu.org/licenses/lgpl-3.0-standalone.html LGPL
  * @link        http://www.xpressengine.com
  */
@@ -27,8 +27,8 @@ use Composer\Util\Filesystem;
  *
  * @category    Installer
  * @package     Xpressengine\Installer
- * @author      XE Team (jhyeon1010) <cjh1010@xpressengine.com>
- * @copyright   2014 Copyright (C) NAVER <http://www.navercorp.com>
+ * @author      XE Developers <developers@xpressengine.com>
+ * @copyright   2019 Copyright XEHub Corp. <https://www.xehub.io>
  * @license     http://www.gnu.org/licenses/lgpl-3.0-standalone.html LGPL
  * @link        http://www.xpressengine.com
  */
