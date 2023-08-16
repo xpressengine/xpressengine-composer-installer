@@ -91,7 +91,7 @@ class XpressengineInstaller extends LibraryInstaller
      * @param string $packageType type of package
      * @return bool
      */
-    public function supports(string $packageType)
+    public function supports($packageType)
     {
         return 'xpressengine-plugin' === $packageType;
     }
