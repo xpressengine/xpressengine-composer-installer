@@ -40,8 +40,10 @@ class XpressengineInstaller extends LibraryInstaller
      */
     public static $changed = [];
 
+    /**
+     * @var array
+     */
     public static $failed = [];
-
 
     /**
      * Initializes library installer.
@@ -49,8 +51,8 @@ class XpressengineInstaller extends LibraryInstaller
      * @param IOInterface $io
      * @param Composer $composer
      * @param string $type
-     * @param Filesystem $filesystem
-     * @param BinaryInstaller $binaryInstaller
+     * @param Filesystem|null $filesystem
+     * @param BinaryInstaller|null $binaryInstaller
      */
     public function __construct(IOInterface $io, Composer $composer, $type = 'library', Filesystem $filesystem = null, BinaryInstaller $binaryInstaller = null)
     {
@@ -89,7 +91,7 @@ class XpressengineInstaller extends LibraryInstaller
      * @param string $packageType type of package
      * @return bool
      */
-    public function supports($packageType)
+    public function supports(string $packageType)
     {
         return 'xpressengine-plugin' === $packageType;
     }
@@ -108,16 +110,23 @@ class XpressengineInstaller extends LibraryInstaller
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         if (defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($package)) {
-            $this->io->writeError("  - Installing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
-        } else {
-            try {
-                parent::install($repo, $package);
-            } catch(TransportException $e) {
-                static::$failed['install'][$package->getName()] = $e->getStatusCode();
-                throw $e;
-            }
-            static::$changed['installed'][$package->getName()] = $package->getPrettyVersion();
+            $this->io->writeError(
+                "  - Installing <info>".$package->getName()."</info> (<comment>".$package->getFullPrettyVersion(
+                )."</comment>): <comment>Skip by Xpressengine-installer</comment>"
+            );
+
+            return null;
         }
+
+        try {
+            $promise = parent::install($repo, $package);
+        } catch (TransportException $e) {
+            static::$failed['install'][$package->getName()] = $e->getStatusCode();
+            throw $e;
+        }
+
+        static::$changed['installed'][$package->getName()] = $package->getPrettyVersion();
+        return $promise;
     }
 
     /**
@@ -126,16 +135,23 @@ class XpressengineInstaller extends LibraryInstaller
     public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         if (defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($initial)) {
-            $this->io->writeError("  - Updating <info>" . $initial->getName() . "</info> (<comment>" . $initial->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
-        } else {
-            try {
-                parent::update($repo, $initial, $target);
-            } catch(TransportException $e) {
-                static::$failed['update'][$target->getName()] = $e->getStatusCode();
-                throw $e;
-            }
-            static::$changed['updated'][$target->getName()] = $target->getPrettyVersion();
+            $this->io->writeError(
+                "  - Updating <info>".$initial->getName()."</info> (<comment>".$initial->getFullPrettyVersion(
+                )."</comment>): <comment>Skip by Xpressengine-installer</comment>"
+            );
+
+            return null;
         }
+
+        try {
+            $promise = parent::update($repo, $initial, $target);
+        } catch (TransportException $e) {
+            static::$failed['update'][$target->getName()] = $e->getStatusCode();
+            throw $e;
+        }
+
+        static::$changed['updated'][$target->getName()] = $target->getPrettyVersion();
+        return $promise;
     }
 
     /**
@@ -143,15 +159,23 @@ class XpressengineInstaller extends LibraryInstaller
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        if(defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($package)) {
-            $this->io->writeError("  - Removing <info>" . $package->getName() . "</info> (<comment>" . $package->getFullPrettyVersion() . "</comment>): <comment>Skip by Xpressengine-installer</comment>");
+        if (defined('__XE_PLUGIN_SKIP__') || $this->checkDevPlugin($package)) {
+            $this->io->writeError(
+                "  - Removing <info>".$package->getName()."</info> (<comment>".$package->getFullPrettyVersion(
+                )."</comment>): <comment>Skip by Xpressengine-installer</comment>"
+            );
+
             if ($this->checkDevPlugin($package)) {
                 $repo->removePackage($package);
             }
-        } else {
-            parent::uninstall($repo, $package);
-            static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
+
+            return null;
         }
+
+        $promise = parent::uninstall($repo, $package);
+        static::$changed['uninstalled'][$package->getName()] = $package->getPrettyVersion();
+
+        return $promise;
     }
 
     /**
